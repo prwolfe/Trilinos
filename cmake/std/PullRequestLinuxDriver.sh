@@ -17,6 +17,8 @@ which -a env
 : ${JOB_BASE_NAME:?}
 : ${BUILD_NUMBER:?}
 : ${WORKSPACE:?}
+## assign a default for the track if it's not set up in Jenkins
+: ${CDASH_TRACK:="Pull Request"}
 
 source /projects/sems/modulefiles/utils/sems-modules-init.sh
 
@@ -112,6 +114,7 @@ echo "List of package enables is: $packageEnables"
 # Set up the full environment for the build
 if [ "Trilinos_pullrequest_gcc_4.8.4" == "${JOB_BASE_NAME:?}" ]
 then
+  CONFIG_SCRIPT=PullRequestLinuxGCC4.8.4TestingSettings.cmake
   source Trilinos/cmake/std/sems/PullRequestGCC4.8.4TestingEnv.sh
   ierror=$?
   if [[ $ierror != 0 ]]; then
@@ -120,6 +123,7 @@ then
   fi
 elif [ "Trilinos_pullrequest_gcc_4.9.3" == "${JOB_BASE_NAME:?}" ]
 then
+    CONFIG_SCRIPT=PullRequestLinuxGCC4.9.3TestingSettings.cmake
   source Trilinos/cmake/std/sems/PullRequestGCC4.9.3TestingEnv.sh
   ierror=$?
   if [[ $ierror != 0 ]]; then
@@ -128,7 +132,18 @@ then
   fi
 elif [ "Trilinos_pullrequest_intel_17.0.1" == "${JOB_BASE_NAME:?}" ]
 then
+  CONFIG_SCRIPT=PullRequestLinuxIntelTestingSettings.cmake
   source Trilinos/cmake/std/sems/PullRequestIntel17.0.1TestingEnv.sh
+  ierror=$?
+  if [[ $ierror != 0 ]]; then
+    echo "There was an issue loading the intel environment. The error code was: $ierror"
+    exit $ierror
+  fi
+elif [ "Trilinos_Clean_CUDA_8.0.44" == "${JOB_BASE_NAME:?}" ]
+then
+  CONFIG_SCRIPT=PullRequestLinuxCUDATestingSettings.cmake
+  QUEUE_SUBMIT="bsub -x -Is -q rhel7F -n 16 -J $JOB_NAME -W 4:00"
+  source Trilinos/cmake/std/sems/PullRequestCUDA8.0.44TestingEnv.sh
   ierror=$?
   if [[ $ierror != 0 ]]; then
     echo "There was an issue loading the intel environment. The error code was: $ierror"
@@ -147,7 +162,6 @@ module list
 
 echo "MPI type = sems-${SEMS_MPI_NAME:?}/${SEMS_MPI_VERSION:?}"
 
-CDASH_TRACK="Pull Request"
 echo "CDash Track = ${CDASH_TRACK:?}"
 
 
@@ -162,20 +176,7 @@ build_name="PR-$PULLREQUESTNUM-test-$JOB_BASE_NAME-$BUILD_NUMBER"
 #same dir the simple_testing.cmake file was in.
 cd TFW_testing_single_configure_prototype
 
-if [ "icc" == ${CC:?} ]
-then
-  CONFIG_SCRIPT=PullRequestLinuxIntelTestingSettings.cmake
-else
-  if [ "Trilinos_pullrequest_gcc_4.8.4" == "${JOB_BASE_NAME:?}" ]
-  then
-    CONFIG_SCRIPT=PullRequestLinuxGCC4.8.4TestingSettings.cmake
-  elif [ "Trilinos_pullrequest_gcc_4.9.3" == "${JOB_BASE_NAME:?}" ]
-  then
-    CONFIG_SCRIPT=PullRequestLinuxGCC4.9.3TestingSettings.cmake
-  fi
-fi
-
-ctest -S simple_testing.cmake \
+${QUEUE_SUBMIT} ctest -S simple_testing.cmake \
   -Dbuild_name=${build_name:?} \
   -Dskip_by_parts_submit=OFF \
   -Dskip_update_step=ON \

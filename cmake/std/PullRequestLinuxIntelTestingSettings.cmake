@@ -20,3 +20,10 @@ set (Zoltan2_simplePamgenTest_MPI_3_DISABLE ON CACHE BOOL "Temporarily disabled 
 
 include("${CMAKE_CURRENT_LIST_DIR}/PullRequestLinuxGCCTestingSettings.cmake")
 
+set (TPL_Scotch_INCLUDE_DIRS "$ENV{SEMS_SCOTCH_INCLUDE_PATH}" CACHE PATH "Set by default for PR testing")
+set (Scotch_LIBRARY_DIRS "$ENV{SEMS_SCOTCH_LIBRARY_PATH}" CACHE PATH "Set by default for PR testing")
+
+set (TPL_ENABLE_Scotch ON CACHE BOOL "Set by default for PR testing")
+# Disable test that was enabled when Scotch TPL was enabled (#2051, #2052)
+set (Zoltan2_orderingTestDriverExample_MPI_1_DISABLE ONCACHE BOOL "Set by default for PR testing")
+
