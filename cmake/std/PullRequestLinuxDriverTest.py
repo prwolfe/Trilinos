@@ -513,9 +513,7 @@ ERROR : Source branch is NOT trilinos/Trilinos::master_merge_YYYYMMDD_HHMMSS
                                             'cmake',
                                             'std',
                                             config_script),
-                           '-Dpackage_enables=../packageEnables.cmake',
-                           '-Dsubprojects_file=../TFW_single_configure_support_scripts/'+
-                           'package_subproject_list.cmake'])
+                           '-Dpackage_enables=../packageEnables.cmake'])
 
     return return_value
 
