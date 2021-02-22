@@ -67,7 +67,7 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/ProjectName.cmake)
 
 # CMake requires that you declare the CMake project in the top-level file and
 # not in an include file :-(
-PROJECT(${PROJECT_NAME} NONE)
+PROJECT(${PROJECT_NAME} NONE )
 
 ## set an env so we know we are in configure
 set(ENV{CMAKE_IS_IN_CONFIGURE_MODE} 1)
